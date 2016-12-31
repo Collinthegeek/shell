@@ -148,6 +148,9 @@ void Application::startup()
         qunsetenv("QT_WAYLAND_USE_XDG_SHELL");
         //qputenv("QT_WAYLAND_USE_XDG_SHELL", QByteArrayLiteral("1"));
 
+        // Disable Qt client side decoration
+        qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", QByteArrayLiteral("1"));
+
         // Don't mess with client scale factor
         qunsetenv("QT_SCALE_FACTOR");
         qunsetenv("QT_SCREEN_SCALE_FACTORS");

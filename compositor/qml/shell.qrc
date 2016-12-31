@@ -11,11 +11,6 @@
 	<file>components/CloseButton.qml</file>
 	<file>components/Overlay.qml</file>
 	<file>components/PagedGrid.qml</file>
-	<file>decoration/PopupWindowDecoration.qml</file>
-	<file>decoration/WindowControls.qml</file>
-	<file>decoration/WindowDecoration.qml</file>
-	<file>decoration/WindowTitleBar.qml</file>
-	<file>decoration/graphics/dropshadow.png</file>
 	<file>desktop/Desktop.qml</file>
 	<file>desktop/DesktopWidgets.qml</file>
 	<file>desktop/HotCorner.qml</file>
@@ -83,6 +78,12 @@
 	<file>windows/XWaylandChrome.qml</file>
 	<file>windows/ChromeMenu.qml</file>
 	<file>windows/MoveItem.qml</file>
+	<file>windows/Decoration.qml</file>
+	<file>windows/DecorationButton.qml</file>
+        <file>windows/window-close.svg</file>
+        <file>windows/window-maximize.svg</file>
+        <file>windows/window-minimize.svg</file>
+        <file>windows/window-restore.svg</file>
 </qresource>
 
 </RCC>

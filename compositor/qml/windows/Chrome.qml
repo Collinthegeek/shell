@@ -43,8 +43,8 @@ ChromeItem {
 
     x: shellSurfaceItem.moveItem.x - shellSurfaceItem.output.position.x
     y: shellSurfaceItem.moveItem.y - shellSurfaceItem.output.position.y
-    width: shellSurfaceItem.width
-    height: shellSurfaceItem.height
+    width: shellSurfaceItem.width + (2 * decoration.marginSize)
+    height: shellSurfaceItem.height + decoration.marginSize + decoration.titleBarHeight
 
     onXChanged: __private.updatePrimary()
     onYChanged: __private.updatePrimary()
@@ -119,13 +119,22 @@ ChromeItem {
         }
     }
 
+    Decoration {
+        id: decoration
+
+        anchors.fill: parent
+    }
+
     ShellSurfaceItem {
         id: shellSurfaceItem
 
         property bool moving: false
 
+        x: shellSurface.decorated ? decoration.marginSize : 0
+        y: shellSurface.decorated ? decoration.titleBarHeight : 0
+
         // FIXME: Transparent backgrounds will be opaque due to shadows
-        layer.enabled: shellSurface.hasDropShadow
+        layer.enabled: false //shellSurface.hasDropShadow
         layer.effect: ElevationEffect {
             elevation: shellSurfaceItem.focus ? 24 : 8
         }
