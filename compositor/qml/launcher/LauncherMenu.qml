@@ -27,6 +27,7 @@
 import QtQml 2.2
 import QtQuick 2.0
 import QtQuick.Controls 2.1
+import Fluid.Core 1.0 as FluidCore
 import Liri.Launcher 0.1 as CppLauncher
 
 Menu {
@@ -66,6 +67,26 @@ Menu {
         delegate: MenuSeparator {}
         onObjectAdded: menu.insertItem(app.desktopFile.actions.length, object)
         onObjectRemoved: menu.removeItem(index)
+    }
+
+    Instantiator {
+        id: shellSurfacesInstantiator
+        model: app.shellSurfaces
+        delegate: MenuItem {
+            text: model.title
+        }
+        onObjectAdded: {
+            menu.insertItem(index, object);
+
+            if (index == app.shellSurfaces.count - 1)
+                menu.insertItem(index + 1, separatorComponent.createObject(shellSurfacesInstantiator));
+        }
+        onObjectRemoved: {
+            menu.removeItem(index);
+
+            if (index == app.shellSurfaces.count - 1)
+                menu.removeItem(index + 1);
+        }
     }
 
     MenuItem {
