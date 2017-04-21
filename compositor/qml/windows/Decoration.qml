@@ -127,7 +127,6 @@ Control {
                 anchors {
                     left: icon.visible ? icon.right : parent.left
                     right: windowControls.left
-                    leftMargin: 8
                     verticalCenter: parent.verticalCenter
                 }
                 horizontalAlignment: Text.AlignHCenter
