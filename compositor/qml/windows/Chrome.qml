@@ -130,11 +130,11 @@ ChromeItem {
 
         property bool moving: false
 
-        x: shellSurface.decorated ? decoration.marginSize : 0
+        x: 0
         y: shellSurface.decorated ? decoration.titleBarHeight : 0
 
         // FIXME: Transparent backgrounds will be opaque due to shadows
-        layer.enabled: false //shellSurface.hasDropShadow
+        layer.enabled: !shellSurface.decorated
         layer.effect: ElevationEffect {
             elevation: shellSurfaceItem.focus ? 24 : 8
         }

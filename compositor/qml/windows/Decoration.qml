@@ -21,168 +21,171 @@
  * $END_LICENSE$
  ***************************************************************************/
 
-import QtQuick 2.0
+import QtQuick 2.7
+import QtQuick.Controls 2.0
 import QtQuick.Controls.Material 2.0
 import Fluid.Controls 1.0
 import Fluid.Material 1.0
 
-Item {
+Control {
     id: decoration
 
-    readonly property int marginSize: shellSurface.fullscreen ? 0 : (shellSurface.windowType === Qt.Popup ? 1 : 2)
+    readonly property int marginSize: shellSurface.maximized || shellSurface.fullscreen ? 0 : (shellSurface.windowType === Qt.Popup ? 1 : 4)
     readonly property int titleBarHeight: shellSurface.fullscreen || shellSurface.windowType === Qt.Popup ? 0 : 32
     readonly property bool dragging: moveArea.drag.active
     readonly property bool hasDropShadow: !shellSurface.maximized && !shellSurface.fullscreen
 
     Material.theme: Material.Dark
 
-    Rectangle {
-        id: frame
+    // FIXME: Transparent backgrounds will be opaque due to shadows
+    layer.enabled: hasDropShadow
+    layer.effect: ElevationEffect {
+        elevation: shellSurfaceItem.focus ? 24 : 8
+    }
+
+    padding: marginSize
+
+    visible: shellSurface.decorated && !shellSurface.fullscreen
+
+    MouseArea {
+        id: resizeArea
+
+        property int pressX
+        property int pressY
+        property int startW
+        property int startH
+        property bool pressed: false
 
         anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.SizeFDiagCursor
 
-        border.color: shellSurface.windowType === Qt.Popup ? "transparent" : Material.color(Material.Blue, Material.Shade500)
-        border.width: 2
-        color: "transparent"
+        //bitfield: top, left, bottom, right
+        property int edges
+        onPressed: {
+            pressed = true;
+            edges = 0;
+            pressX = mouse.x;
+            pressY = mouse.y;
+            startW = chrome.width;
+            startH = chrome.height;
+            if (mouse.y > chrome.height - titleBarHeight)
+                edges |= 4; //bottom edge
+            if (mouse.x > chrome.width - titleBarHeight)
+                edges |= 8; //right edge
+        }
+        onReleased: pressed = false
+        onMouseXChanged: {
+            if (pressed) {
+                var w = startW;
+                var h = startH;
+                if (edges & 8)
+                    w += mouse.x - pressX;
+                if (edges & 4)
+                    h += mouse.y - pressY;
+                shellSurface.requestSize(w, h);
+                console.warn("resize " + chrome + " " + chrome.x + ", ", chrome.y)
+            }
+        }
+    }
+
+    Rectangle {
+        id: titleBar
+
+        anchors {
+            left: parent.left
+            top: parent.top
+        }
+        width: shellSurfaceItem.width
+        height: titleBarHeight + radius
         radius: 3
-        smooth: true
-        visible: shellSurface.decorated && !shellSurface.fullscreen
+        color: Material.color(Material.Blue)
+        visible: shellSurface.windowType !== Qt.Popup
 
-        // FIXME: Transparent backgrounds will be opaque due to shadows
-        layer.enabled: hasDropShadow
-        layer.effect: ElevationEffect {
-            elevation: shellSurfaceItem.focus ? 24 : 8
-        }
-
-        MouseArea {
-            id: resizeArea
-
-            property int pressX
-            property int pressY
-            property int startW
-            property int startH
-            property bool pressed: false
-
+        Item {
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.SizeFDiagCursor
+            anchors.bottomMargin: parent.radius
 
-            //bitfield: top, left, bottom, right
-            property int edges
-            onPressed: {
-                pressed = true;
-                edges = 0;
-                pressX = mouse.x;
-                pressY = mouse.y;
-                startW = chrome.width;
-                startH = chrome.height;
-                if (mouse.y > chrome.height - titleBarHeight)
-                    edges |= 4; //bottom edge
-                if (mouse.x > chrome.width - titleBarHeight)
-                    edges |= 8; //right edge
+            Icon {
+                id: icon
+
+                anchors {
+                    left: parent.left
+                    leftMargin: 8
+                    verticalCenter: parent.verticalCenter
+                }
+
+                name: shellSurface.iconName
+                width: 24
+                height: width
+                visible: name != "" && status == Image.Ready
             }
-            onReleased: pressed = false
-            onMouseXChanged: {
-                if (pressed) {
-                    var w = startW;
-                    var h = startH;
-                    if (edges & 8)
-                        w += mouse.x - pressX;
-                    if (edges & 4)
-                        h += mouse.y - pressY;
-                    shellSurface.requestSize(w, h);
-                    console.warn("resize " + chrome + " " + chrome.x + ", ", chrome.y)
+
+            Label {
+                id: titleBarLabel
+
+                anchors {
+                    left: icon.visible ? icon.right : parent.left
+                    right: windowControls.left
+                    leftMargin: 8
+                    verticalCenter: parent.verticalCenter
                 }
-            }
-        }
-
-        Rectangle {
-            id: titleBar
-
-            anchors {
-                margins: marginSize
-                left: parent.left
-                top: parent.top
-                right: parent.right
-            }
-            height: titleBarHeight
-            color: Material.color(Material.Blue)
-            visible: shellSurface.windowType !== Qt.Popup
-
-            Item {
-                anchors.fill: parent
-
-                Icon {
-                    id: icon
-
-                    anchors {
-                        left: parent.left
-                        leftMargin: 8
-                        verticalCenter: parent.verticalCenter
-                    }
-
-                    name: shellSurface.iconName
-                    width: 24
-                    height: width
-                    visible: name != "" && status == Image.Ready
-                }
-
-                SubheadingLabel {
-                    id: titleBarLabel
-
-                    anchors {
-                        left: icon.visible ? icon.right : parent.left
-                        leftMargin: 8
-                        verticalCenter: parent.verticalCenter
-                    }
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    opacity: shellSurface.activated ? 1.0 : 0.5
-                    color: Material.primaryTextColor
-                    text: shellSurface.title
-                }
-
-                Row {
-                    id: windowControls
-
-                    anchors {
-                        right: parent.right
-                        rightMargin: 8
-                        verticalCenter: parent.verticalCenter
-                    }
-
-                    spacing: 12
-                    opacity: shellSurface.activated ? 1.0 : 0.5
-
-                    DecorationButton {
-                        source: "window-minimize.svg"
-                        onClicked: shellSurface.minimized = true
-                    }
-
-                    DecorationButton {
-                        source: shellSurface.maximized ? "window-restore.svg" : "window-maximize.svg"
-                        onClicked: shellSurface.sendMaximized(Qt.size(100, 100))
-                    }
-
-                    DecorationButton {
-                        source: "window-close.svg"
-                        onClicked: shellSurface.close()
-                    }
-                }
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
+                opacity: shellSurface.activated ? 1.0 : 0.5
+                color: Material.primaryTextColor
+                text: shellSurface.title
+                wrapMode: Text.NoWrap
             }
 
             MouseArea {
                 id: moveArea
-                anchors.fill: parent
-                enabled: false
-                drag.target: chrome
+
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    right: windowControls.left
+                    bottom: parent.bottom
+                    bottomMargin: parent.radius
+                }
+
+                drag.target: shellSurfaceItem.moveItem
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onPressed: {
+                onClicked: {
                     if (mouse.button === Qt.LeftButton)
                         shellSurfaceItem.takeFocus();
                     else if (mouse.button === Qt.RightButton)
                         chrome.showWindowMenu(mouse.x, mouse.y);
+                }
+            }
+
+            Row {
+                id: windowControls
+
+                anchors {
+                    right: parent.right
+                    rightMargin: 8
+                    verticalCenter: parent.verticalCenter
+                }
+
+                spacing: 12
+                opacity: shellSurface.activated ? 1.0 : 0.5
+
+                DecorationButton {
+                    source: "window-minimize.svg"
+                    onClicked: shellSurface.minimized = true
+                }
+
+                DecorationButton {
+                    source: shellSurface.maximized ? "window-restore.svg" : "window-maximize.svg"
+                    onClicked: shellSurface.maximized ? shellSurface.unmaximize() : shellSurface.maximize(output)
+                }
+
+                DecorationButton {
+                    source: "window-close.svg"
+                    onClicked: shellSurface.close()
                 }
             }
         }

@@ -386,6 +386,15 @@ WaylandCompositor {
                 onKeyboardFocusChanged: wlShellSurface.activated = newFocus == surface
             }
 
+            function maximize(output) {
+                wlShellSurface.setMaximized(output);
+            }
+
+            function unmaximize() {
+                if (windowType == Qt.Window)
+                    wlShellSurface.setDefaultToplevel();
+            }
+
             function pingClient() {
                 wlShellSurface.ping();
                 pingTimer.start();
