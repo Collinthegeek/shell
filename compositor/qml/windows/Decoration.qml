@@ -151,7 +151,6 @@ Control {
                 }
 
                 drag.target: shellSurfaceItem.moveItem
-                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: {
                     if (mouse.button === Qt.LeftButton)
